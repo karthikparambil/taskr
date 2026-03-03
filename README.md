@@ -1,8 +1,8 @@
+<img src="assets/todo.png" width=100px> 
+
 #  Taskr - To-Do App
 
 **Taskr** is a beautiful, feature-packed To-Do application designed for high productivity and visual excellence. It combines a powerful Flask backend with a premium, responsive frontend experience.
-
-![Taskr UI](assets/todo.png)
 
 ## ✨ Features
 
@@ -20,20 +20,19 @@
 - **Backend**: Python, Flask
 - **Frontend**: Vanilla JavaScript, CSS3, HTML5
 - **Storage**: Markdown (`todos.md`)
-- **Icons**: SVG-based custom icons
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3
 - pip
 
 ### Installation
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/taskr.git
+   git clone https://github.com/karthikparambil/taskr.git
    cd taskr
    ```
 
@@ -44,7 +43,7 @@
 
 3. **Run the application**:
    ```bash
-   python app.py
+   python3 app.py
    ```
 
 4. **Open in your browser**:
