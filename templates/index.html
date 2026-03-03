@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taskr — To-Do</title>
+  <meta name="description"
+    content="A beautiful, feature-packed To-Do app with lists, priority tags, drag-and-drop, and undo delete." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface2: #f8fafb;
+      --surface3: #f1f4f6;
+      --border: #edeff1;
+      --accent: #4a90e2;
+      --accent-dim: #f0f7ff;
+      --accent2: #63a4ff;
+      --text: #1a2a3a;
+      --text-dim: #5c6b7a;
+      --text-mute: #a1adb9;
+      --danger: #e74c3c;
+      --success: #2ecc71;
+      --warn: #f39c12;
+      --high: #e67e22;
+      --medium: #3498db;
+      --low: #2ecc71;
+      --urgent: #e74c3c;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 2px 15px rgba(0, 0, 0, 0.03);
+      --transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+      --sidebar-w: 280px;
+    }
+
+    html {
+      font-size: 15px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      overflow: hidden;
+      line-height: 1.6;
+    }
+
+    h1,
+    h2,
+    h3,
+    .logo {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--surface3);
+      border-radius: 10px;
+    }
+
+    #sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--surface2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform var(--transition);
+      z-index: 10;
+    }
+
+    .sidebar-header {
+      padding: 32px 24px 20px;
+    }
+
+    .btn-ghost {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .btn-primary {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.25);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(74, 144, 226, 0.35);
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    #snackbar-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 4px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: all var(--transition);
+    }
+
+    #snackbar-close:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .logo span {
+      color: var(--text-mute);
+      font-weight: 400;
+    }
+
+    #list-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      margin-bottom: 4px;
+      transition: all var(--transition);
+      user-select: none;
+      color: var(--text-dim);
+    }
+
+    .nav-item:hover {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .nav-item.active {
+      background: #fff;
+      color: var(--accent);
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .nav-item-name {
+      flex: 1;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-mute);
+    }
+
+    .nav-item.active .nav-badge {
+      color: var(--accent);
+    }
+
+    .nav-item-del {
+      opacity: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-mute);
+      font-size: 0.9rem;
+      padding: 4px;
+      transition: all var(--transition);
+    }
+
+    .nav-item:hover .nav-item-del {
+      opacity: 1;
+    }
+
+    .nav-item-del:hover {
+      color: var(--danger);
+    }
+
+    .sidebar-footer {
+      padding: 24px;
+    }
+
+    #new-list-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+    }
+
+    #new-list-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(74, 144, 226, 0.3);
+      filter: brightness(1.05);
+    }
+
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    #topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 32px 40px 24px;
+      flex-shrink: 0;
+    }
+
+    #menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    #list-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+    }
+
+    #search-wrap {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 4px 16px;
+      gap: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    #search-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    #search-wrap svg {
+      color: var(--text-mute);
+    }
+
+    #search-input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 8px 0;
+      width: 220px;
+    }
+
+    #filter-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .filter-btn:hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    .filter-btn.active {
+      background: #fff;
+      color: var(--accent);
+      border-color: var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    #task-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 40px 40px;
+    }
+
+    #empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      height: 60%;
+      color: var(--text-mute);
+    }
+
+    #empty-state p {
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      transition: all var(--transition);
+      box-shadow: var(--shadow);
+      border: 1px solid transparent;
+      animation: fadeIn .4s ease;
+    }
+
+    .task-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      border-color: var(--accent-dim);
+    }
+
+    .task-item.drag-over {
+      border-color: var(--accent);
+    }
+
+    .task-item.dragging {
+      opacity: 0.5;
+    }
+
+    .task-item.done-task {
+      opacity: 0.6;
+    }
+
+    .task-item.done-task .task-text {
+      text-decoration: line-through;
+      color: var(--text-mute);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .task-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    .task-body {
+      flex: 1;
+    }
+
+    .task-text {
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--text);
+      padding: 4px 0;
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .tag-chip {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .tag-urgent {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .tag-high {
+      background: #ffedd5;
+      color: #c2410c;
+    }
+
+    .tag-medium {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .tag-low {
+      background: #f0fdf4;
+      color: #15803d;
+    }
+
+    .tag-daily {
+      background: #fef9c3;
+      color: #854d0e;
+    }
+
+    .assignee-chip {
+      font-size: 0.75rem;
+      color: var(--text-mute);
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .task-item:hover .task-actions {
+      opacity: 1;
+    }
+
+    .task-action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-mute);
+      padding: 6px;
+      border-radius: 8px;
+      transition: all var(--transition);
+    }
+
+    .task-action-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .task-action-btn.del:hover {
+      color: var(--danger);
+      background: #fee2e2;
+    }
+
+    #add-task-bar {
+      padding: 20px 40px 40px;
+    }
+
+    #add-task-form {
+      display: flex;
+      gap: 12px;
+      background: var(--surface);
+      padding: 8px;
+      border-radius: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    #add-task-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 12px 24px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: transparent;
+    }
+
+    #add-task-btn {
+      padding: 0 24px;
+      height: 48px;
+      background: var(--accent);
+      border: none;
+      border-radius: 30px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    #add-task-btn:hover {
+      background: #4d7a6f;
+    }
+
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 62, 58, 0.4);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #modal-overlay.open {
+      display: flex;
+    }
+
+    #modal {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 32px;
+      width: 400px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+      animation: modalScale .3s ease;
+    }
+
+    @keyframes modalScale {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    #modal-input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      outline: none;
+    }
+
+    #modal-input:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    #sidebar-quote {
+      padding: 24px;
+      margin: 0 16px 16px;
+      background: var(--accent-dim);
+      border-radius: var(--radius);
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      text-align: center;
+      transition: all 0.5s ease;
+    }
+
+    .quote-text {
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-style: italic;
+      line-height: 1.5;
+      font-weight: 500;
+      width: 100%;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .quote-text.visible {
+      opacity: 1;
+    }
+
+    .quote-cursor {
+      display: none;
+    }
+
+
+    #snackbar {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      z-index: 200;
+      transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    #snackbar.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #undo-btn {
+      color: var(--low);
+      font-weight: 700;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    @media (max-width: 800px) {
+      #sidebar {
+        position: fixed;
+        transform: translateX(-100%);
+        width: 280px;
+      }
+
+      #sidebar.open {
+        transform: translateX(0);
+      }
+
+      #menu-btn {
+        display: block;
+      }
+
+      #main {
+        padding: 0;
+      }
+
+      #topbar {
+        padding: 24px 20px;
+      }
+
+      #task-area {
+        padding: 0 20px 20px;
+      }
+
+      #add-task-bar {
+        padding: 20px;
+      }
+
+      #search-wrap {
+        display: none;
+      }
+    }
+
+    #sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.2);
+      z-index: 9;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .quote-cursor {
+      display: inline-block;
+      width: 5px;
+      height: 10px;
+      background: var(--accent);
+      margin-left: 2px;
+      animation: blink 0.8s steps(1) infinite;
+      vertical-align: middle;
+    }
+
+    #no-list-placeholder p::after,
+    #empty-state p::after {
+      content: '_';
+      animation: blink 1s steps(1) infinite;
+      color: var(--accent);
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .suggestions-list {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 20px;
+      right: 20px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 1000;
+      overflow: hidden;
+      animation: modalScale 0.2s ease;
+    }
+
+    .suggestions-list.open {
+      display: block;
+    }
+
+    .suggestion-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .suggestion-item:hover,
+    .suggestion-item.selected {
+      background: var(--surface2);
+      color: var(--accent);
+    }
+
+    .suggestion-item .tag-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">task<span>r</span></div>
+    </div>
+    <nav id="list-nav"></nav>
+    <div id="sidebar-quote">
+      <div class="quote-text" id="typewriter-quote"></div>
+    </div>
+    <div class="sidebar-footer">
+      <button id="new-list-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        New List
+      </button>
+    </div>
+  </aside>
+  <div id="sidebar-overlay"></div>
+
+  <main id="main">
+    <div id="topbar">
+      <button id="menu-btn" aria-label="Toggle menu">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M3 12h18M3 6h18M3 18h18" />
+        </svg>
+      </button>
+      <h1 id="list-title">Select a list</h1>
+      <div id="search-wrap">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
+        <input id="search-input" type="search" placeholder="Search tasks…" autocomplete="off" />
+      </div>
+      <div id="filter-btns">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="done">Done</button>
+      </div>
+    </div>
+
+    <div id="task-area">
+      <div id="no-list-placeholder">
+        <svg width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 24 24"
+          opacity=".3">
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+          <path d="M8 12h8M8 8h5M8 16h3" />
+        </svg>
+        <p>Create a list from the sidebar to get started.</p>
+      </div>
+      <div id="task-list"></div>
+      <div id="empty-state">
+        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+          <path d="M9 12l2 2 4-4" />
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+        </svg>
+        <p>All clear! Add a task below.</p>
+      </div>
+    </div>
+
+    <div id="add-task-bar">
+      <form id="add-task-form">
+        <div style="position: relative; flex: 1; display: flex;">
+          <input id="add-task-input" type="text" placeholder="New task  use #urgent, #high, #low, @name…"
+            autocomplete="off" />
+          <div id="priority-suggestions" class="suggestions-list"></div>
+        </div>
+        <button id="add-task-btn" type="submit">+ Add</button>
+      </form>
+    </div>
+  </main>
+
+  <div id="modal-overlay" role="dialog" aria-modal="true">
+    <div id="modal">
+      <div class="modal-title" id="modal-title">New List</div>
+      <input id="modal-input" type="text" placeholder="List name…" />
+      <div class="modal-actions">
+        <button class="btn-ghost" id="modal-cancel">Cancel</button>
+        <button class="btn-primary" id="modal-confirm">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="snackbar" role="alert">
+    <span id="snackbar-msg">Task deleted</span>
+    <button id="undo-btn">Undo</button>
+    <button id="snackbar-close">✕</button>
+  </div>
+
+  <script>
+    let STATE = { lists: [] };
+    let activeListId = null;
+    let activeFilter = 'all';
+    let searchQuery = '';
+    let undoPayload = null;
+    let undoTimer = null;
+    let dragSrcId = null;
+
+    const listNav = document.getElementById('list-nav');
+    const taskListEl = document.getElementById('task-list');
+    const listTitle = document.getElementById('list-title');
+    const addTaskForm = document.getElementById('add-task-form');
+    const addTaskInput = document.getElementById('add-task-input');
+    const searchInput = document.getElementById('search-input');
+    const noListPH = document.getElementById('no-list-placeholder');
+    const emptyState = document.getElementById('empty-state');
+    const newListBtn = document.getElementById('new-list-btn');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalTitle = document.getElementById('modal-title');
+    const modalInput = document.getElementById('modal-input');
+    const modalCancel = document.getElementById('modal-cancel');
+    const modalConfirm = document.getElementById('modal-confirm');
+    const snackbar = document.getElementById('snackbar');
+    const snackbarMsg = document.getElementById('snackbar-msg');
+    const undoBtn = document.getElementById('undo-btn');
+    const snackbarClose = document.getElementById('snackbar-close');
+    const menuBtn = document.getElementById('menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    async function api(method, url, body) {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
+
+    async function boot() {
+      STATE = await api('GET', '/api/state');
+      renderSidebar();
+      if (STATE.lists.length) selectList(STATE.lists[0].id);
+      else showNoList();
+    }
+
+    function renderSidebar() {
+      listNav.innerHTML = '';
+      STATE.lists.forEach(lst => {
+        const pending = lst.tasks.filter(t => !t.done).length;
+        const item = document.createElement('div');
+        item.className = 'nav-item' + (lst.id === activeListId ? ' active' : '');
+        item.dataset.id = lst.id;
+        item.innerHTML = `
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 9h8M8 13h5"/></svg>
+        <span class="nav-item-name">${esc(lst.name)}</span>
+        <span class="nav-badge">${pending}</span>
+        <button class="nav-item-del" data-id="${lst.id}" title="Delete list">✕</button>
+      `;
+        item.addEventListener('click', e => {
+          if (e.target.classList.contains('nav-item-del')) return;
+          selectList(lst.id);
+          closeSidebar();
+        });
+        item.querySelector('.nav-item-del').addEventListener('click', async () => {
+          if (!confirm(`Delete list "${lst.name}" and all its tasks?`)) return;
+          await api('DELETE', `/api/lists/${lst.id}`);
+          STATE.lists = STATE.lists.filter(l => l.id !== lst.id);
+          if (activeListId === lst.id) {
+            activeListId = null;
+            STATE.lists.length ? selectList(STATE.lists[0].id) : showNoList();
+          }
+          renderSidebar();
+        });
+        listNav.appendChild(item);
+      });
+    }
+
+    function selectList(id) {
+      activeListId = id;
+      renderSidebar();
+      renderTasks();
+      const lst = getActiveList();
+      listTitle.textContent = lst ? lst.name : 'Tasks';
+      noListPH.classList.remove('visible');
+      document.getElementById('add-task-bar').style.display = '';
+    }
+
+    function showNoList() {
+      activeListId = null;
+      listTitle.textContent = 'Select a list';
+      taskListEl.innerHTML = '';
+      noListPH.classList.add('visible');
+      emptyState.style.display = 'none';
+      document.getElementById('add-task-bar').style.display = 'none';
+    }
+
+    function getActiveList() {
+      return STATE.lists.find(l => l.id === activeListId) || null;
+    }
+
+    function filteredTasks(lst) {
+      let tasks = [...lst.tasks].sort((a, b) => a.order - b.order);
+      if (activeFilter === 'active') tasks = tasks.filter(t => !t.done);
+      if (activeFilter === 'done') tasks = tasks.filter(t => t.done);
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        tasks = tasks.filter(t =>
+          t.text.toLowerCase().includes(q) ||
+          (t.priority && t.priority.toLowerCase().includes(q)) ||
+          (t.assignee && t.assignee.toLowerCase().includes(q)) ||
+          (t.is_daily && '#daily'.includes(q))
+        );
+      }
+      return tasks;
+    }
+
+    function renderTasks() {
+      taskListEl.innerHTML = '';
+      const lst = getActiveList();
+      if (!lst) return;
+      const tasks = filteredTasks(lst);
+      if (!tasks.length) {
+        emptyState.style.display = 'flex';
+      } else {
+        emptyState.style.display = 'none';
+        tasks.forEach(t => taskListEl.appendChild(buildTaskEl(t)));
+      }
+    }
+
+    function buildTaskEl(task) {
+      const el = document.createElement('div');
+      el.className = 'task-item' + (task.done ? ' done-task' : '');
+      el.dataset.id = task.id;
+      el.draggable = true;
+
+      el.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+      </span>
+      <input class="task-check" type="checkbox" ${task.done ? 'checked' : ''} aria-label="Mark done" />
+      <div class="task-body">
+        <div class="task-text" contenteditable="false" spellcheck="false">${esc(task.text)}</div>
+        <div class="task-meta">${buildMeta(task)}</div>
+      </div>
+      <div class="task-actions">
+        <button class="task-action-btn edit" title="Edit">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="task-action-btn del" title="Delete">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    `;
+
+      el.querySelector('.task-check').addEventListener('change', async e => {
+        await api('PUT', `/api/tasks/${task.id}`, { done: e.target.checked });
+        const t = findTask(task.id);
+        if (t) t.done = e.target.checked;
+        el.classList.toggle('done-task', e.target.checked);
+        renderSidebar();
+      });
+
+      const textEl = el.querySelector('.task-text');
+      const editBtn = el.querySelector('.task-action-btn.edit');
+      editBtn.addEventListener('click', () => startEdit(textEl, task));
+
+      textEl.addEventListener('dblclick', () => startEdit(textEl, task));
+
+      el.querySelector('.task-action-btn.del').addEventListener('click', () => deleteTask(task.id));
+
+      el.addEventListener('dragstart', onDragStart);
+      el.addEventListener('dragover', onDragOver);
+      el.addEventListener('dragleave', onDragLeave);
+      el.addEventListener('drop', onDrop);
+      el.addEventListener('dragend', onDragEnd);
+
+      return el;
+    }
+
+    function buildMeta(task) {
+      let html = '';
+      if (task.priority) {
+        html += `<span class="tag-chip tag-${task.priority}">#${task.priority}</span>`;
+      }
+      if (task.is_daily) {
+        html += `<span class="tag-chip tag-daily">#daily</span>`;
+      }
+      if (task.assignee) {
+        html += `<span class="assignee-chip">@${esc(task.assignee)}</span>`;
+      }
+      return html;
+    }
+
+    function findTask(id) {
+      for (const lst of STATE.lists) {
+        const t = lst.tasks.find(t => t.id === id);
+        if (t) return t;
+      }
+      return null;
+    }
+
+    function startEdit(textEl, task) {
+      const getRawText = () => {
+        let raw = task.text;
+        if (task.priority) raw += ` #${task.priority}`;
+        if (task.is_daily) raw += ` #daily`;
+        if (task.assignee) raw += ` @${task.assignee}`;
+        return raw;
+      };
+
+      textEl.contentEditable = 'true';
+      textEl.textContent = getRawText();
+      textEl.focus();
+      const range = document.createRange();
+      range.selectNodeContents(textEl);
+      range.collapse(false);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+
+      const finish = async () => {
+        textEl.contentEditable = 'false';
+        const newRawText = textEl.textContent.trim();
+        if (!newRawText || newRawText === getRawText()) {
+          textEl.textContent = task.text;
+          return;
+        }
+        const updated = await api('PUT', `/api/tasks/${task.id}`, { text: newRawText });
+        task.text = updated.text;
+        task.priority = updated.priority;
+        task.assignee = updated.assignee;
+        task.is_daily = updated.is_daily;
+
+        textEl.textContent = task.text;
+        const metaEl = textEl.closest('.task-body').querySelector('.task-meta');
+        metaEl.innerHTML = buildMeta(task);
+      };
+
+      textEl.addEventListener('blur', finish, { once: true });
+      textEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); textEl.blur(); }
+        if (e.key === 'Escape') {
+          textEl.textContent = task.text;
+          textEl.contentEditable = 'false';
+        }
+      });
+    }
+
+    async function deleteTask(taskId) {
+      const el = document.querySelector(`.task-item[data-id="${taskId}"]`);
+      if (el) {
+        el.classList.add('removing');
+        await new Promise(r => setTimeout(r, 220));
+      }
+      const payload = await api('DELETE', `/api/tasks/${taskId}`);
+      undoPayload = payload;
+
+      for (const lst of STATE.lists) {
+        const idx = lst.tasks.findIndex(t => t.id === taskId);
+        if (idx !== -1) { lst.tasks.splice(idx, 1); break; }
+      }
+      renderTasks();
+      renderSidebar();
+      showSnackbar('Task deleted');
+    }
+
+    function showSnackbar(msg) {
+      snackbarMsg.textContent = msg;
+      snackbar.classList.add('show');
+      clearTimeout(undoTimer);
+      undoTimer = setTimeout(hideSnackbar, 5000);
+    }
+
+    function hideSnackbar() {
+      snackbar.classList.remove('show');
+      undoPayload = null;
+    }
+
+    undoBtn.addEventListener('click', async () => {
+      if (!undoPayload) return;
+      hideSnackbar();
+      const restored = await api('POST', '/api/tasks/restore', undoPayload);
+      const lst = STATE.lists.find(l => l.id === undoPayload.list_id);
+      if (lst) lst.tasks.push(restored);
+      renderTasks();
+      renderSidebar();
+    });
+
+    snackbarClose.addEventListener('click', hideSnackbar);
+
+    const prioritySuggestions = document.getElementById('priority-suggestions');
+    const PRIORITIES_LIST = [
+      { tag: '#urgent', color: 'var(--urgent)' },
+      { tag: '#high', color: 'var(--high)' },
+      { tag: '#medium', color: 'var(--medium)' },
+      { tag: '#low', color: 'var(--low)' },
+      { tag: '#daily', color: 'var(--warn)' }
+    ];
+    let selectedSuggestionIndex = -1;
+
+    function showSuggestions(query) {
+      const filtered = PRIORITIES_LIST.filter(p => p.tag.startsWith(query));
+      if (!filtered.length) {
+        hideSuggestions();
+        return;
+      }
+
+      prioritySuggestions.innerHTML = '';
+      filtered.forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item' + (idx === selectedSuggestionIndex ? ' selected' : '');
+        item.innerHTML = `<span class="tag-dot" style="background: ${p.color}"></span> ${esc(p.tag)}`;
+        item.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          selectSuggestion(p.tag);
+        };
+        prioritySuggestions.appendChild(item);
+      });
+
+      prioritySuggestions.classList.add('open');
+    }
+
+    function hideSuggestions() {
+      prioritySuggestions.classList.remove('open');
+      selectedSuggestionIndex = -1;
+    }
+
+    function selectSuggestion(tag) {
+      const words = addTaskInput.value.split(' ');
+      words[words.length - 1] = tag;
+      addTaskInput.value = words.join(' ') + ' ';
+      hideSuggestions();
+      addTaskInput.focus();
+    }
+
+    addTaskInput.addEventListener('input', () => {
+      const value = addTaskInput.value;
+      const lastWord = value.split(' ').pop();
+      if (lastWord.startsWith('#')) {
+        selectedSuggestionIndex = -1;
+        showSuggestions(lastWord.toLowerCase());
+      } else {
+        hideSuggestions();
+      }
+    });
+
+    addTaskInput.addEventListener('keydown', e => {
+      if (!prioritySuggestions.classList.contains('open')) return;
+
+      const items = prioritySuggestions.querySelectorAll('.suggestion-item');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedSuggestionIndex = (selectedSuggestionIndex + 1) % items.length;
+        renderSuggestionsState(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedSuggestionIndex = (selectedSuggestionIndex - 1 + items.length) % items.length;
+        renderSuggestionsState(items);
+      } else if (e.key === 'Enter' && selectedSuggestionIndex > -1) {
+        e.preventDefault();
+        items[selectedSuggestionIndex].click();
+      } else if (e.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    function renderSuggestionsState(items) {
+      items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === selectedSuggestionIndex);
+      });
+    }
+
+    document.addEventListener('click', e => {
+      if (!addTaskForm.contains(e.target)) hideSuggestions();
+    });
+
+    addTaskForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const text = addTaskInput.value.trim();
+      if (!text || !activeListId) return;
+      const task = await api('POST', '/api/tasks', { list_id: activeListId, text });
+      const lst = getActiveList();
+      if (lst) lst.tasks.push(task);
+      addTaskInput.value = '';
+      renderTasks();
+      renderSidebar();
+      taskListEl.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    function onDragStart(e) {
+      dragSrcId = this.dataset.id;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+    function onDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (this.dataset.id !== dragSrcId) this.classList.add('drag-over');
+    }
+    function onDragLeave() { this.classList.remove('drag-over'); }
+    function onDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      if (this.dataset.id === dragSrcId) return;
+
+      const items = [...taskListEl.querySelectorAll('.task-item')];
+      const srcIdx = items.findIndex(el => el.dataset.id === dragSrcId);
+      const dstIdx = items.findIndex(el => el.dataset.id === this.dataset.id);
+      if (srcIdx === -1 || dstIdx === -1) return;
+
+      if (srcIdx < dstIdx) taskListEl.insertBefore(items[srcIdx], items[dstIdx].nextSibling);
+      else taskListEl.insertBefore(items[srcIdx], items[dstIdx]);
+
+      const newOrder = [...taskListEl.querySelectorAll('.task-item')].map(el => el.dataset.id);
+      api('POST', '/api/tasks/reorder', { list_id: activeListId, ordered_ids: newOrder });
+
+      const lst = getActiveList();
+      if (lst) {
+        newOrder.forEach((id, idx) => {
+          const t = lst.tasks.find(t => t.id === id);
+          if (t) t.order = idx;
+        });
+      }
+    }
+    function onDragEnd() {
+      document.querySelectorAll('.task-item').forEach(el => {
+        el.classList.remove('dragging', 'drag-over');
+      });
+      dragSrcId = null;
+    }
+
+    searchInput.addEventListener('input', e => {
+      searchQuery = e.target.value.trim();
+      renderTasks();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        renderTasks();
+      });
+    });
+
+    newListBtn.addEventListener('click', () => openModal());
+    modalCancel.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+    function openModal() {
+      modalTitle.textContent = 'New List';
+      modalInput.value = '';
+      modalOverlay.classList.add('open');
+      setTimeout(() => modalInput.focus(), 60);
+      modalConfirm.onclick = async () => {
+        const name = modalInput.value.trim();
+        if (!name) return;
+        const lst = await api('POST', '/api/lists', { name });
+        STATE.lists.push(lst);
+        renderSidebar();
+        selectList(lst.id);
+        closeModal();
+      };
+    }
+
+    modalInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') modalConfirm.click();
+      if (e.key === 'Escape') closeModal();
+    });
+
+    function closeModal() {
+      modalOverlay.classList.remove('open');
+    }
+
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('open');
+    });
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('open');
+    }
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    const QUOTES = [
+      "EVERY SMALL STEP COUNTS.",
+      "BREATHE. YOU ARE DOING ENOUGH.",
+      "BE KIND TO YOUR MIND.",
+      "FOCUS ON THE PROGRESS, NOT THE PERFECTION.",
+      "YOU ARE CAPABLE OF AMAZING THINGS.",
+      "STAY PATIENT AND TRUST THE JOURNEY.",
+      "YOUR SPEED DOESN'T MATTER, FORWARD IS FORWARD.",
+      "CLARITY COMES FROM ACTION, NOT THOUGHT.",
+      "THE BEST VIEW COMES AFTER THE HARDEST CLIMB.",
+      "IN THE MIDDLE OF EVERY DIFFICULTY LIES OPPORTUNITY.",
+      "DONE IS BETTER THAN PERFECT.",
+      "ONE DAY OR DAY ONE — YOU DECIDE.",
+      "START WHERE YOU ARE. USE WHAT YOU HAVE.",
+      "DISCIPLINE IS CHOOSING BETWEEN WHAT YOU WANT NOW AND WHAT YOU WANT MOST.",
+      "THE HARDEST STEP IS ALWAYS THE FIRST ONE.",
+      "PROGRESS, NOT PERFECTION.",
+      "YOU DON'T HAVE TO BE GREAT TO START, BUT YOU HAVE TO START TO BE GREAT.",
+      "SMALL ACTIONS, BIG CHANGES.",
+      "CONSISTENCY BEATS INTENSITY EVERY TIME.",
+      "BELIEVE IN THE PROCESS, TRUST THE TIMING.",
+      "YOUR FUTURE SELF IS WATCHING — MAKE THEM PROUD.",
+      "REST IF YOU MUST, BUT DON'T YOU QUIT.",
+      "EVERY EXPERT WAS ONCE A BEGINNER.",
+      "THE ONLY BAD WORKOUT IS THE ONE THAT DIDN'T HAPPEN.",
+      "SHOW UP. EVEN ON THE HARD DAYS.",
+      "ENERGY FLOWS WHERE ATTENTION GOES.",
+      "BE THE REASON YOU SMILE TODAY.",
+      "YOU ARE CLOSER THAN YOU THINK.",
+      "FALL SEVEN TIMES, STAND UP EIGHT.",
+      "DO IT FOR THE VERSION OF YOU WHO GAVE UP.",
+      "MAKE TODAY SO AWESOME THAT YESTERDAY GETS JEALOUS.",
+      "YOUR ONLY COMPETITION IS WHO YOU WERE YESTERDAY.",
+      "HARD THINGS TAKE TIME. THAT'S WHAT MAKES THEM WORTH IT.",
+      "THE ROAD IS LONG BUT THE VIEW IS WORTH IT.",
+      "PUSH YOURSELF BECAUSE NO ONE ELSE WILL DO IT FOR YOU.",
+      "DOUBT KILLS MORE DREAMS THAN FAILURE EVER WILL.",
+      "YOU WERE BUILT FOR THIS MOMENT.",
+      "STOP WAITING FOR THE PERFECT MOMENT — CREATE IT.",
+      "GREATNESS LIVES ON THE OTHER SIDE OF FEAR.",
+      "IT ALWAYS SEEMS IMPOSSIBLE UNTIL IT'S DONE.",
+      "THE PAIN YOU FEEL TODAY IS THE STRENGTH YOU FEEL TOMORROW.",
+      "THINK BIG. START SMALL. ACT NOW.",
+      "YOUR POTENTIAL IS ENDLESS.",
+      "MAKE EACH DAY YOUR MASTERPIECE.",
+      "SUCCESS IS A SERIES OF SMALL WINS.",
+      "LESS THINKING. MORE DOING.",
+      "KEEP GOING. YOU ARE MAKING PROGRESS.",
+      "BE STUBBORN ABOUT YOUR GOALS, FLEXIBLE ABOUT YOUR METHODS.",
+      "IF IT MATTERS TO YOU, YOU WILL FIND A WAY.",
+      "THE BEST TIME TO START WAS YESTERDAY. THE NEXT BEST TIME IS NOW.",
+      "NOTHING WORTH HAVING COMES EASY.",
+      "YOU ARE NOT BEHIND — YOU ARE ON YOUR OWN TIMELINE.",
+      "CALM MIND. STRONG SPIRIT. CLEAR PATH.",
+      "WORK IN SILENCE. LET SUCCESS MAKE THE NOISE.",
+      "EVERY SUNRISE IS A NEW CHANCE TO GET IT RIGHT.",
+    ];
+
+    let currentQuoteIndex = 0;
+    const quoteEl = document.getElementById('typewriter-quote');
+
+    async function showQuote() {
+      const text = QUOTES[currentQuoteIndex];
+
+      quoteEl.classList.remove('visible');
+      await new Promise(r => setTimeout(r, 800));
+
+      quoteEl.textContent = text;
+
+      quoteEl.classList.add('visible');
+
+      setTimeout(rotateQuote, 8000);
+    }
+
+    function rotateQuote() {
+      currentQuoteIndex = (currentQuoteIndex + 1) % QUOTES.length;
+      showQuote();
+    }
+
+    boot().then(() => {
+      setTimeout(rotateQuote, 1000);
+    }).catch(console.error);
+  </script>
+</body>
+
+</html>
