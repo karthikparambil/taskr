@@ -266,7 +266,7 @@ def delete_task(task_id):
         abort(404)
     lst["tasks"].remove(task)
     save_md(TODO_FILE, LISTS)
-    return jsonify({"deleted_task": task, "list_id": lst["id"]})
+    return jsonify({"task": task, "list_id": lst["id"]})
 
 
 @app.route("/api/tasks/reorder", methods=["POST"])
@@ -302,4 +302,4 @@ def restore_task():
     return jsonify(task), 201
 
 if __name__ == "__main__":
-    app.run(debug=False, port=5100)
+    app.run(host="127.0.0.1", debug=False, port=5100)
