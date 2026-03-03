@@ -412,6 +412,11 @@
       color: var(--text-mute);
     }
 
+    .task-item.removing {
+      transform: translateX(30px);
+      opacity: 0;
+    }
+
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -1156,11 +1161,12 @@
       }
       renderTasks();
       renderSidebar();
-      showSnackbar('Task deleted');
+      showSnackbar('Task deleted', true);
     }
 
-    function showSnackbar(msg) {
+    function showSnackbar(msg, showUndo = true) {
       snackbarMsg.textContent = msg;
+      undoBtn.style.display = showUndo ? 'inline-block' : 'none';
       snackbar.classList.add('show');
       clearTimeout(undoTimer);
       undoTimer = setTimeout(hideSnackbar, 5000);
@@ -1168,17 +1174,19 @@
 
     function hideSnackbar() {
       snackbar.classList.remove('show');
-      undoPayload = null;
+      setTimeout(() => { undoPayload = null; }, 400); // Clear after fade out
     }
 
     undoBtn.addEventListener('click', async () => {
-      if (!undoPayload) return;
+      const payload = undoPayload;
+      if (!payload) return;
       hideSnackbar();
-      const restored = await api('POST', '/api/tasks/restore', undoPayload);
-      const lst = STATE.lists.find(l => l.id === undoPayload.list_id);
+      const restored = await api('POST', '/api/tasks/restore', payload);
+      const lst = STATE.lists.find(l => l.id === payload.list_id);
       if (lst) lst.tasks.push(restored);
       renderTasks();
       renderSidebar();
+      showSnackbar('Task restored', false);
     });
 
     snackbarClose.addEventListener('click', hideSnackbar);
