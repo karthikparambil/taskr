@@ -1,4 +1,4 @@
-# 📝 Taskr — To-Do App
+#  Taskr - To-Do App
 
 **Taskr** is a beautiful, feature-packed To-Do application designed for high productivity and visual excellence. It combines a powerful Flask backend with a premium, responsive frontend experience.
 
