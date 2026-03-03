@@ -41,13 +41,7 @@
    pip install -r requirements.txt
    ```
 
-3. **Run the application**:
-   ```bash
-   python3 app.py
-   ```
 
-4. **Open in your browser**:
-   Navigate to `http://localhost:5100`
 
 ## 🐧 Linux Desktop Setup (Optional)
 
@@ -55,7 +49,7 @@ To launch Taskr directly from your application menu, follow these steps:
 
 ### 1. Configure the Launcher Script
 
-Open `script/to_do.sh` and update the `APP_DIR` variable to point to your project directory:
+Open `to_do.sh` and update the `APP_DIR` variable to point to your project directory:
 
 ```bash
 APP_DIR="/home/YOUR_USERNAME/path/to/taskr"
@@ -72,7 +66,7 @@ Type=Application
 Name=Todo App
 Comment=Personal To-Do Manager
 Icon=accessories-text-editor
-Exec=/bin/bash /home/YOUR_USERNAME/path/to/taskr/script/to_do.sh
+Exec=/bin/bash /home/YOUR_USERNAME/path/to/taskr/to_do.sh
 Terminal=false
 Categories=Utility;Office;
 Keywords=todo;tasks;notes;markdown;
@@ -85,7 +79,7 @@ StartupNotify=true
 ### 3. Make the Script Executable
 
 ```bash
-chmod +x script/to_do.sh
+chmod +x to_do.sh
 ```
 
 ## 📁 Architecture
