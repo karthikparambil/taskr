@@ -124,6 +124,8 @@ def _seed_default():
 _seed_default()
 LISTS = parse_md(TODO_FILE)
 
+
+
 def _find_list(list_id: str):
     return next((l for l in LISTS if l["id"] == list_id), None)
 
@@ -138,6 +140,8 @@ def _find_task(task_id: str):
 
 def _state_json():
     return jsonify({"lists": LISTS})
+
+
 
 def check_and_reset_daily_tasks():
     """Reset tasks containing #daily if a new day has started."""
@@ -166,9 +170,12 @@ def index():
     check_and_reset_daily_tasks()
     return render_template("index.html")
 
+
 @app.route("/api/state", methods=["GET"])
 def get_state():
     return _state_json()
+
+
 
 @app.route("/api/lists", methods=["POST"])
 def create_list():
@@ -180,6 +187,7 @@ def create_list():
     LISTS.append(new_list)
     save_md(TODO_FILE, LISTS)
     return jsonify(new_list), 201
+
 
 @app.route("/api/lists/<list_id>", methods=["PUT"])
 def rename_list(list_id):
@@ -194,6 +202,7 @@ def rename_list(list_id):
     save_md(TODO_FILE, LISTS)
     return jsonify(lst)
 
+
 @app.route("/api/lists/<list_id>", methods=["DELETE"])
 def delete_list(list_id):
     lst = _find_list(list_id)
@@ -202,6 +211,8 @@ def delete_list(list_id):
     LISTS.remove(lst)
     save_md(TODO_FILE, LISTS)
     return jsonify({"deleted": list_id})
+
+
 
 @app.route("/api/tasks", methods=["POST"])
 def create_task():
