@@ -7,7 +7,7 @@ import os
 import re
 import uuid
 from datetime import datetime
-from flask import Flask, jsonify, request, render_template, abort
+from flask import Flask, jsonify, request, render_template, abort, send_from_directory
 
 app = Flask(__name__)
 
@@ -169,6 +169,16 @@ def check_and_reset_daily_tasks():
 def index():
     check_and_reset_daily_tasks()
     return render_template("index.html")
+
+
+@app.route("/assets/<path:filename>")
+def serve_assets(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "assets"), filename)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "assets"), "todo.png", mimetype="image/png")
 
 
 @app.route("/api/state", methods=["GET"])
