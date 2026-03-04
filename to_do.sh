@@ -1,7 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+APP_DIR="$SCRIPT_DIR"
 
-APP_DIR="/path/to/direcory"
 APP_FILE="$APP_DIR/app.py"
 PORT=5100
 BROWSER_PROFILE="/tmp/todo-app-profile"
@@ -31,9 +32,49 @@ NC='\033[0m'
 
 echo -e "${CYAN}"
 echo "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "         📝  TODO APP LAUNCHER v1.0         "
+echo "         📝  TODO APP LAUNCHER v2.0         "
 echo "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo -e "${NC}"
+
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo "Usage: $0 [OPTION]"
+    echo ""
+    echo "Options:"
+    echo "  --setup        Create a Linux Desktop Entry (~/.local/share/applications/todo.desktop)"
+    echo "  --help, -h     Show this help message"
+    echo ""
+    exit 0
+fi
+
+create_desktop_entry() {
+    DESKTOP_FILE="$HOME/.local/share/applications/todo.desktop"
+    echo -e "${CYAN}[INFO] Creating desktop entry at: $DESKTOP_FILE${NC}"
+    
+    mkdir -p "$(dirname "$DESKTOP_FILE")"
+
+    cat > "$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Todo App
+Comment=Personal To-Do Manager
+Icon=$APP_DIR/assets/todo.png
+Exec=/bin/bash "$APP_DIR/to_do.sh"
+Terminal=false
+Categories=Utility;Office;
+Keywords=todo;tasks;notes;markdown;
+StartupNotify=true
+EOF
+
+    chmod +x "$DESKTOP_FILE"
+    echo -e "${GREEN}[OK]  Desktop entry created! You can now find 'Todo App' in your application menu.${NC}"
+    exit 0
+}
+
+if [[ "$1" == "--setup" ]]; then
+    create_desktop_entry
+fi
+
 
 if [ ! -f "$APP_FILE" ]; then
     echo -e "${RED}[ERROR] app.py not found at: $APP_DIR${NC}"
@@ -53,9 +94,8 @@ echo -e "${GREEN}[OK]  App dir → $APP_DIR${NC}"
 
 OLD_PID=$(lsof -ti:$PORT 2>/dev/null)
 if [ -n "$OLD_PID" ]; then
-    echo -e "${YELLOW}[INFO] Port $PORT in use (PID: $OLD_PID)  killing old instance...${NC}"
+    echo -e "${YELLOW}[INFO] Port $PORT in use (PID: $OLD_PID) — killing old instance...${NC}"
     kill -9 $OLD_PID 2>/dev/null
-    sleep 0.5
 fi
 
 if [ -f "$APP_DIR/venv/bin/activate" ]; then
@@ -70,7 +110,6 @@ $PYTHON app.py &> /tmp/todo-app.log &
 FLASK_PID=$!
 echo -e "${GREEN}[OK]  Flask started (PID: $FLASK_PID)${NC}"
 
-sleep 0.5
 if ! kill -0 $FLASK_PID 2>/dev/null; then
     echo -e "${RED}[ERROR] Flask failed to start. Check logs:${NC}"
     cat /tmp/todo-app.log
@@ -80,7 +119,6 @@ fi
 echo -ne "${CYAN}[INFO] Waiting for server"
 READY=false
 for i in {1..30}; do
-    sleep 0.5
     echo -n "."
     if curl -s "http://localhost:$PORT" > /dev/null 2>&1; then
         READY=true
@@ -151,7 +189,7 @@ trap cleanup SIGINT SIGTERM
 
 (
     while kill -0 $BROWSER_PID 2>/dev/null; do
-        sleep 1
+        sleep 0.01
     done
 
     echo -e "\n${RED}[STOP] Browser closed → shutting down Flask...${NC}"
