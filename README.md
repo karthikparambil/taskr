@@ -4,7 +4,7 @@
 
 **Taskr** is a beautiful, feature-packed To-Do application designed for high productivity and visual excellence. It combines a powerful Flask backend with a premium, responsive frontend experience.
 
-## ✨ Features
+## Features
 
 - **Premium UI/UX**: Modern design with smooth transitions, dark mode compatible surfaces, and custom typography.
 - **Smart Tags**: Use `#urgent`, `#high`, `#medium`, `#low` to prioritize tasks.
@@ -15,13 +15,13 @@
 - **Markdown Storage**: Your data is saved in `todos.md`, making it portable and easy to read.
 - **Undo Delete**: Accidentally deleted something? No worries, use the snackbar to undo!
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Backend**: Python, Flask
 - **Frontend**: Vanilla JavaScript, CSS3, HTML5
 - **Storage**: Markdown (`todos.md`)
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -43,7 +43,7 @@
 
 
 
-## 🐧 Linux Desktop Setup (Optional)
+## Linux Desktop Setup (Optional)
 
 To launch Taskr directly from your application menu, follow these steps:
 
