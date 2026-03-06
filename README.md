@@ -40,24 +40,31 @@
    ```bash
    pip install -r requirements.txt
    ```
+3. **Run the application**:
+   ```bash
+   python app.py
+   ```
 
-
+4. **Open in your browser**:
+   Navigate to `http://localhost:5100`
 
 ## Linux Desktop Setup (Optional)
-
 To launch Taskr directly from your application menu, follow these steps:
 
-### 1. Configure the Launcher Script
+### 1. Run Auto-Setup
 
-Open `to_do.sh` and update the `APP_DIR` variable to point to your project directory:
+The launcher script can automatically create a desktop entry for you. Simply run:
 
 ```bash
-APP_DIR="/home/YOUR_USERNAME/path/to/taskr"
+chmod +x to_do.sh
+./to_do.sh --setup
 ```
 
-### 2. Create a Desktop Entry
+This will create a `todo.desktop` file in `~/.local/share/applications/`, allowing you to launch Taskr from your application menu.
 
-Create a new file at `/usr/share/applications/todo.desktop` (requires sudo) or `~/.local/share/applications/todo.desktop` (for current user only) with the following content:
+### 2. Manual Setup (Optional)
+
+If you prefer to do it manually, create a file at `~/.local/share/applications/todo.desktop` with the following content:
 
 ```ini
 [Desktop Entry]
@@ -66,26 +73,20 @@ Type=Application
 Name=Todo App
 Comment=Personal To-Do Manager
 Icon=accessories-text-editor
-Exec=/bin/bash /home/YOUR_USERNAME/path/to/taskr/to_do.sh
+Exec=/bin/bash /path/to/your/taskr/to_do.sh
 Terminal=false
 Categories=Utility;Office;
 Keywords=todo;tasks;notes;markdown;
 StartupNotify=true
 ```
 
-> [!IMPORTANT]
-> Make sure to replace `/home/YOUR_USERNAME/path/to/taskr` with the actual absolute path to your project.
-
-### 3. Make the Script Executable
-
-```bash
-chmod +x to_do.sh
-```
 
 ## 📁 Architecture
 
 Refer to [ARCHITECTURE.md](ARCHITECTURE.md) for a detailed breakdown of the project structure and technical implementation.
 
 ## 📜 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
 
 Distributed under the MIT License. See `LICENSE` for more information.
