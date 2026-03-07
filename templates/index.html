@@ -1002,7 +1002,7 @@
     }
 
     function filteredTasks(lst) {
-      let tasks = [...lst.tasks].sort((a, b) => a.order - b.order);
+      let tasks = [...lst.tasks].sort((a, b) => (a.done === b.done) ? (a.order - b.order) : (a.done ? 1 : -1));
       if (activeFilter === 'active') tasks = tasks.filter(t => !t.done);
       if (activeFilter === 'done') tasks = tasks.filter(t => t.done);
       if (searchQuery) {
@@ -1060,6 +1060,7 @@
         const t = findTask(task.id);
         if (t) t.done = e.target.checked;
         el.classList.toggle('done-task', e.target.checked);
+        renderTasks();
         renderSidebar();
       });
 
