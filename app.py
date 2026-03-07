@@ -87,7 +87,7 @@ def save_md(path: str, lists):
     lines = []
     for lst in lists:
         lines.append(f"## {lst['name']}")
-        sorted_tasks = sorted(lst["tasks"], key=lambda t: t["order"])
+        sorted_tasks = sorted(lst["tasks"], key=lambda t: (t["done"], t["order"]))
         for task in sorted_tasks:
             mark = "x" if task["done"] else " "
             text = task["text"]
